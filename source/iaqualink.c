@@ -73,6 +73,9 @@ int get_iaqualink_cmd(unsigned char source_message_type, unsigned char **dest_me
 
   _std_cmd[0] = source_message_type;
   _std_cmd[1] = 0x00;
+  // The iAquaLink 3.0 on a REV Yg panel answers every 0x53 poll with its ready ACK byte (0x1f 0x00 when idle)
+  if (source_message_type == 0x53 && _aqconfig_.iaqualink_ready_ack != 0x3f)
+    _std_cmd[0] = _aqconfig_.iaqualink_ready_ack;
   *dest_message = _std_cmd;
   int len = 2;
 
@@ -788,9 +791,9 @@ bool process_iaqualink_packet(unsigned char *packet, int length, struct aqualink
 
   lastchecksum(packet, length);
 
-  unsigned char cmd_getMainstatus[] = {0x3f, 0x08};
-  unsigned char cmd_getTouchstatus[] = {0x3f, 0x10};
-  unsigned char cmd_getAuxstatus[] = {0x3f, 0x18};
+  unsigned char cmd_getMainstatus[] = {_aqconfig_.iaqualink_ready_ack, 0x08};
+  unsigned char cmd_getTouchstatus[] = {_aqconfig_.iaqualink_ready_ack, 0x10};
+  unsigned char cmd_getAuxstatus[] = {_aqconfig_.iaqualink_ready_ack, 0x18};
   //unsigned char cmd_readyCommand[] = {0x3f, 0x20};
   //unsigned char fullcmd[] = {0x00, 0x24, 0x73, 0x01, 0x21, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   // byte 4 is ID.  0x00 pump, 0x02 spa etc
