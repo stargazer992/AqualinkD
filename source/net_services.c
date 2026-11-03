@@ -1320,8 +1320,7 @@ uriAtype action_URI(request_source from, const char *URI, int uri_length, float 
   } else if ((ri3 != NULL && ((strncasecmp(ri2, "color", 5) == 0) || (strncasecmp(ri2, "program", 7) == 0)) && (strncasecmp(ri3, "set", 3) == 0))) {
     found = false;
     for (i=0; i < _aqualink_data->total_buttons; i++) {
-      if (strncmp(ri1, _aqualink_data->aqbuttons[i].name, strlen(_aqualink_data->aqbuttons[i].name)) == 0 ||
-          strncmp(ri1, _aqualink_data->aqbuttons[i].label, strlen(_aqualink_data->aqbuttons[i].label)) == 0)
+      if (uri_strcmp(ri1, _aqualink_data->aqbuttons[i].name) || uri_strcmp(ri1, _aqualink_data->aqbuttons[i].label))
       {
         //char buf[5];
         found = true;
@@ -1341,8 +1340,7 @@ uriAtype action_URI(request_source from, const char *URI, int uri_length, float 
   } else if ((ri3 != NULL && (strncasecmp(ri2, "brightness", 10) == 0) && (strncasecmp(ri3, "set", 3) == 0))) {
     found = false;
     for (i=0; i < _aqualink_data->total_buttons; i++) {
-      if (strncmp(ri1, _aqualink_data->aqbuttons[i].name, strlen(_aqualink_data->aqbuttons[i].name)) == 0 ||
-          strncmp(ri1, _aqualink_data->aqbuttons[i].label, strlen(_aqualink_data->aqbuttons[i].label)) == 0)
+      if (uri_strcmp(ri1, _aqualink_data->aqbuttons[i].name) || uri_strcmp(ri1, _aqualink_data->aqbuttons[i].label))
       {
         found = true;
         panel_device_request(_aqualink_data, LIGHT_BRIGHTNESS, i, value, from);
@@ -1359,8 +1357,7 @@ uriAtype action_URI(request_source from, const char *URI, int uri_length, float 
   } else if ((ri3 != NULL && (strncasecmp(ri2, "rgb", 3) == 0) && (strncasecmp(ri3, "set", 3) == 0))) {
     found = false;
     for (i=0; i < _aqualink_data->total_buttons; i++) {
-      if (strncmp(ri1, _aqualink_data->aqbuttons[i].name, strlen(_aqualink_data->aqbuttons[i].name)) == 0 ||
-          strncmp(ri1, _aqualink_data->aqbuttons[i].label, strlen(_aqualink_data->aqbuttons[i].label)) == 0)
+      if (uri_strcmp(ri1, _aqualink_data->aqbuttons[i].name) || uri_strcmp(ri1, _aqualink_data->aqbuttons[i].label))
       {
         found = true;
         panel_device_request(_aqualink_data, LIGHT_RGB, i, (int)value, from);

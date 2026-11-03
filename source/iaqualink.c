@@ -95,6 +95,7 @@ int get_iaqualink_cmd(unsigned char source_message_type, unsigned char **dest_me
     } else {
       LOG(IAQL_LOG,LOG_WARNING,"Next command in queue is too large, ignoring\n");
       LOG(IAQL_LOG,LOG_ERR,"Re sending get prepare frame\n");
+      _cmd_readyCommand[0] = _aqconfig_.iaqualink_ready_ack;
       *dest_message = _cmd_readyCommand;
     }
   }
@@ -112,6 +113,17 @@ void remove_iaqualink_cmd() {
   }
 }
 
+
+unsigned char iAqalnkLightZone(aqkey *button) {
+  if ( ((button->special_mask & (VIRTUAL_BUTTON | PROGRAM_LIGHT)) == (VIRTUAL_BUTTON | PROGRAM_LIGHT)) &&
+       button->special_mask_ptr != NULL ) {
+    clight_detail *light = (clight_detail *)button->special_mask_ptr;
+    if (light->lightType == LC_JANDYINFINATE) {
+      return light->lightZone;
+    }
+  }
+  return 0x00;
+}
 
 unsigned char iAqalnkDevID(aqkey *button) {
 
@@ -284,13 +296,17 @@ void set_iaqualink_light_colormode(aqkey *button, int value)
     return;
   }
 
+  _fullcmd[5] = iAqalnkLightZone(button);
+
   _fullcmd[6] = (unsigned char)value;
   _fullcmd[7] = 0x64; // 100% brightness when setting a color mode
 
+  _cmd_readyCommand[0] = _aqconfig_.iaqualink_ready_ack;
   push_iaqualink_cmd(_cmd_readyCommand, 2);
   push_iaqualink_cmd(_fullcmd, 19);
 
   _fullcmd[4] = 0x00;
+  _fullcmd[5] = 0x00;
   _fullcmd[6] = 0x00;
   _fullcmd[7] = 0x00;
 }
@@ -304,13 +320,17 @@ void set_iaqualink_light_brightness(aqkey *button, int value)
     return;
   }
 
+  _fullcmd[5] = iAqalnkLightZone(button);
+
   _fullcmd[6] = 0xFF;
   _fullcmd[7] = (unsigned char)value;
 
+  _cmd_readyCommand[0] = _aqconfig_.iaqualink_ready_ack;
   push_iaqualink_cmd(_cmd_readyCommand, 2);
   push_iaqualink_cmd(_fullcmd, 19);
 
   _fullcmd[4] = 0x00;
+  _fullcmd[5] = 0x00;
   _fullcmd[6] = 0x00;
   _fullcmd[7] = 0x00;
 }
@@ -326,14 +346,17 @@ void set_iaqualink_light_rgb(aqkey *button, int r, int g, int b)
 
   // RGB command uses devID+2 (e.g. lightID=0x61 → RGB devID=0x63)
   _fullcmd[4] = devID + 2;
+  _fullcmd[5] = iAqalnkLightZone(button);
   _fullcmd[6] = (unsigned char)r;
   _fullcmd[7] = (unsigned char)g;
   _fullcmd[8] = (unsigned char)b;
 
+  _cmd_readyCommand[0] = _aqconfig_.iaqualink_ready_ack;
   push_iaqualink_cmd(_cmd_readyCommand, 2);
   push_iaqualink_cmd(_fullcmd, 19);
 
   _fullcmd[4] = 0x00;
+  _fullcmd[5] = 0x00;
   _fullcmd[6] = 0x00;
   _fullcmd[7] = 0x00;
   _fullcmd[8] = 0x00;
@@ -344,7 +367,8 @@ void set_iaqualink_aux_state(aqkey *button, bool isON) {
   _fullcmd[4] = iAqalnkDevID(button);
 
   if (_fullcmd[4] != 0xFF) {
-    push_iaqualink_cmd(_cmd_readyCommand, 2);
+    _cmd_readyCommand[0] = _aqconfig_.iaqualink_ready_ack;
+  push_iaqualink_cmd(_cmd_readyCommand, 2);
     push_iaqualink_cmd(_fullcmd, 19);
   } else {
      LOG(IAQL_LOG, LOG_ERR, "Couldn't find iaqualink keycode for button %s\n",button->label);
@@ -381,6 +405,7 @@ void set_iaqualink_heater_setpoint(int value, SP_TYPE type) {
   // Should check value is valid here.
   //_fullcmd[6] = value;
 
+  _cmd_readyCommand[0] = _aqconfig_.iaqualink_ready_ack;
   push_iaqualink_cmd(_cmd_readyCommand, 2);
   push_iaqualink_cmd(_fullcmd, 19);
 
@@ -786,7 +811,8 @@ bool process_iaqualink_packet(unsigned char *packet, int length, struct aqualink
 /*
         sendid=sendid==0x18?0x60:0x18;
         _fullcmd[4] = sendid;
-        push_iaqualink_cmd(_cmd_readyCommand, 2);
+        _cmd_readyCommand[0] = _aqconfig_.iaqualink_ready_ack;
+  push_iaqualink_cmd(_cmd_readyCommand, 2);
         push_iaqualink_cmd(_fullcmd, 19);
         _fullcmd[4] = 0x00;
 */
@@ -802,14 +828,16 @@ bool process_iaqualink_packet(unsigned char *packet, int length, struct aqualink
         LOG(IAQL_LOG, LOG_INFO,"*****************************************\n");
 
         _fullcmd[4] = ID++;
-        push_iaqualink_cmd(_cmd_readyCommand, 2);
+        _cmd_readyCommand[0] = _aqconfig_.iaqualink_ready_ack;
+  push_iaqualink_cmd(_cmd_readyCommand, 2);
         push_iaqualink_cmd(_fullcmd, 19);
 
         push_iaqualink_cmd(cmd_getMainstatus, 2);
         push_iaqualink_cmd(cmd_getTouchstatus, 2);
         push_iaqualink_cmd(cmd_getAuxstatus, 2);
 
-        push_iaqualink_cmd(_cmd_readyCommand, 2);
+        _cmd_readyCommand[0] = _aqconfig_.iaqualink_ready_ack;
+  push_iaqualink_cmd(_cmd_readyCommand, 2);
         push_iaqualink_cmd(_fullcmd, 19);
 */
 

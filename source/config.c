@@ -154,6 +154,7 @@ void set_config_defaults()
 
 const int           _dcfg_unknownInt = TEMP_UNKNOWN;
 const unsigned char _dcfg_unknownHex = NUL; // 0x00 don't use
+const unsigned char _dcfg_iaqualinkReadyAck = 0x3f;
 const unsigned char _dcfg_findIDHex = 0xFF;
 
 const bool          _dcfg_false = false;
@@ -316,6 +317,16 @@ void init_parameters (struct aqconfig * parms)
   _cfgParams[_numCfgParams].name = CFG_N_enable_iaqualink;
   _cfgParams[_numCfgParams].valid_values = CFG_V_BOOL;
   _cfgParams[_numCfgParams].default_value = (void *)&_dcfg_false;
+  _cfgParams[_numCfgParams].config_mask |= CFG_FORCE_RESTART;
+
+  // ACK type sent to the panel's iAqualink poll when a command is queued.
+  // Panel REV Yg only answers 0x1f 0x20 (as sent by a real iAquaLink 3.0) with the 0x73 read request.
+  _numCfgParams++;
+  _cfgParams[_numCfgParams].value_ptr = &_aqconfig_.iaqualink_ready_ack;
+  _cfgParams[_numCfgParams].value_type = CFG_HEX;
+  _cfgParams[_numCfgParams].name = CFG_N_iaqualink_ready_ack;
+  _cfgParams[_numCfgParams].config_mask |= CFG_GRP_ADVANCED;
+  _cfgParams[_numCfgParams].default_value = (void *)&_dcfg_iaqualinkReadyAck;
   _cfgParams[_numCfgParams].config_mask |= CFG_FORCE_RESTART;
   
 #ifndef AQ_MANAGER
@@ -1509,6 +1520,9 @@ bool populateLightData(struct aqualinkdata *aqdata, char *lightcfg ,aqkey *butto
     return true;
   } else if (strncasecmp(lightcfg, "lightID", 7) == 0) {
     light->lightID = strtoul(cleanwhitespace(value), NULL, 16);
+    return true;
+  } else if (strncasecmp(lightcfg, "lightZone", 9) == 0) {
+    light->lightZone = strtoul(cleanwhitespace(value), NULL, 10);
     return true;
   } else {
     return false;

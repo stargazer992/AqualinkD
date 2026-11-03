@@ -337,6 +337,7 @@ typedef struct clightd
   clight_type lightColorModes; // if lightType=0 then this can be used to define different colormodes for AqualinkD UI's
   aqkey *button;
   unsigned char lightID; // RS485 ID (only Jandy infinate watercolor)
+  unsigned char lightZone; // iAqualink zone byte (only Jandy infinate watercolor, 0=first zone)
   int currentValue;
   int lastValue;         // Used for AqualinkD self programming
 

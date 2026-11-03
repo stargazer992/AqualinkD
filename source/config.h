@@ -78,6 +78,7 @@ struct aqconfig
   unsigned char extended_device_id2;
   bool extended_device_id_programming;
   bool enable_iaqualink;
+  unsigned char iaqualink_ready_ack;
   //bool enable_RS_device_value_print;
   bool deamonize;
 #ifndef AQ_MANAGER // Need to uncomment and clean up referances in future.
@@ -292,6 +293,7 @@ int _numCfgParams;
 
 #define CFG_N_extended_device_id_programming    "extended_device_id_programming"
 #define CFG_N_enable_iaqualink                  "enable_iaqualink"
+#define CFG_N_iaqualink_ready_ack               "iaqualink_ready_ack"
 #define CFG_N_log_file                          "log_file"
 #define CFG_N_mqtt_aq_topic                     "mqtt_aq_topic"
 #define CFG_N_mqtt_server                       "mqtt_address"
