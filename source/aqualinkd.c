@@ -830,6 +830,7 @@ void main_loop()
   //int delayAckCnt = 0;
   bool got_probe = false;
   bool got_probe_extended = false;
+  bool extended_taken_over = false;
   bool got_probe_rssa = false;
   bool print_once = false;
   int blank_read_reconnect = MAX_ZERO_READ_BEFORE_RECONNECT; // Will get reset if non blocking
@@ -1077,7 +1078,13 @@ void main_loop()
          // The panel keeps polling an address it already registered (e.g. a removed iAquaLink 3.0)
          // instead of probing it, so take over that address on its first poll.
          got_probe_extended = true;
+         extended_taken_over = true;
          LOG(AQUA_LOG,LOG_NOTICE, "Got poll (0x%02hhx) on registered '0x%02hhx' Extended Protocol, taking it over\n",packet_buffer[PKT_CMD],_aqconfig_.extended_device_id);
+         if (_aqconfig_.enable_iaqualink && _aqconfig_.extended_device_id2 == 0x00 && !isPDA_PANEL) {
+           _aqconfig_.extended_device_id2 = _aqconfig_.extended_device_id + 112;
+           LOG(AQUA_LOG,LOG_NOTICE, "Enabling iAqualink Protocol on 0x%02hhx\n",_aqconfig_.extended_device_id2);
+         }
+         caculate_ack_packet(rs_fd, packet_buffer, IAQTOUCH);
       } else {
         if(!print_once) {
           LOG(AQUA_LOG,LOG_NOTICE, "Got message but no probe on '0x%02hhx', did we start too soon? (waiting for probe)\n",_aqconfig_.extended_device_id);
@@ -1085,6 +1092,16 @@ void main_loop()
         }
       }
       // NSF Should put some form of timeout here and continue with no extended ID
+    }
+    // The panel holds the bus resending pages to a taken-over address until they are ACKed,
+    // and probes nothing else meanwhile, so answer it while still waiting for the other probes.
+    else if (packet_length > 0 && extended_taken_over && packet_buffer[PKT_DEST] == _aqconfig_.extended_device_id) {
+      blank_read = 0;
+      caculate_ack_packet(rs_fd, packet_buffer, IAQTOUCH);
+    }
+    else if (packet_length > 0 && extended_taken_over && _aqconfig_.extended_device_id2 != 0x00 && packet_buffer[PKT_DEST] == _aqconfig_.extended_device_id2) {
+      blank_read = 0;
+      caculate_ack_packet(rs_fd, packet_buffer, IAQUALNK);
     }
 
     else if (packet_length <= 0) {
