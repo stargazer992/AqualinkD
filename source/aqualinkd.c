@@ -1078,11 +1078,6 @@ void main_loop()
          // instead of probing it, so take over that address on its first poll.
          got_probe_extended = true;
          LOG(AQUA_LOG,LOG_NOTICE, "Got poll (0x%02hhx) on registered '0x%02hhx' Extended Protocol, taking it over\n",packet_buffer[PKT_CMD],_aqconfig_.extended_device_id);
-         // No iAqualink Touch startup message follows on an already registered ID, so enable iAqualink here.
-         if (_aqconfig_.enable_iaqualink && _aqconfig_.extended_device_id2 == 0x00) {
-           _aqconfig_.extended_device_id2 = _aqconfig_.extended_device_id + 112;
-           LOG(AQUA_LOG,LOG_NOTICE, "Enabling iAqualink Protocol on 0x%02hhx\n",_aqconfig_.extended_device_id2);
-         }
       } else {
         if(!print_once) {
           LOG(AQUA_LOG,LOG_NOTICE, "Got message but no probe on '0x%02hhx', did we start too soon? (waiting for probe)\n",_aqconfig_.extended_device_id);
@@ -1132,6 +1127,14 @@ void main_loop()
     }
   }
   
+  // With a non-default ready ACK (iAquaLink 3.0 emulation) the panel may never send the
+  // iAqualink Touch startup message that enables iAqualink, so enable it here.
+  if (_aqconfig_.enable_iaqualink && _aqconfig_.iaqualink_ready_ack != 0x3f &&
+      _aqconfig_.extended_device_id != 0x00 && _aqconfig_.extended_device_id2 == 0x00 && !isPDA_PANEL) {
+    _aqconfig_.extended_device_id2 = _aqconfig_.extended_device_id + 112;
+    LOG(AQUA_LOG,LOG_NOTICE, "Enabling iAqualink Protocol on 0x%02hhx\n",_aqconfig_.extended_device_id2);
+  }
+
   RemoveAQDstatusMask(AUTOCONFIGURE_ID);
   RemoveAQDstatusMask(NOT_CONNECTED);
   AddAQDstatusMask(CONNECTING);
