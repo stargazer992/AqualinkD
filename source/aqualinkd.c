@@ -1073,6 +1073,11 @@ void main_loop()
       if (packet_buffer[PKT_CMD] == CMD_PROBE) {
          got_probe_extended = true;
          LOG(AQUA_LOG,LOG_NOTICE, "Got probe on '0x%02hhx' Extended Protocol\n",_aqconfig_.extended_device_id);
+      } else if (_aqconfig_.iaqualink_ready_ack != 0x3f) {
+         // The panel keeps polling an address it already registered (e.g. a removed iAquaLink 3.0)
+         // instead of probing it, so take over that address on its first poll.
+         got_probe_extended = true;
+         LOG(AQUA_LOG,LOG_NOTICE, "Got poll (0x%02hhx) on registered '0x%02hhx' Extended Protocol, taking it over\n",packet_buffer[PKT_CMD],_aqconfig_.extended_device_id);
       } else {
         if(!print_once) {
           LOG(AQUA_LOG,LOG_NOTICE, "Got message but no probe on '0x%02hhx', did we start too soon? (waiting for probe)\n",_aqconfig_.extended_device_id);
