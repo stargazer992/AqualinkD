@@ -1359,9 +1359,10 @@ void main_loop()
               caculate_ack_packet(rs_fd, packet_buffer, AQUAPDA);
           break;
           case IAQUALNK:
-            process_iaqualink_packet(packet_buffer, packet_length, &_aqualink_data);
+            // ACK first: the panel drops an iAqualink device whose ACK arrives late.
             if (!simulator_packet)
               caculate_ack_packet(rs_fd, packet_buffer, IAQUALNK);
+            process_iaqualink_packet(packet_buffer, packet_length, &_aqualink_data);
           break;
           default:
           break;
